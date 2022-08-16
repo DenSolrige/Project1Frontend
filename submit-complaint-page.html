@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .fadingout {
+            animation: fadeout .5s ease-in;
+            animation-delay: 3.5s;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeout{
+            0%    { opacity: 1}
+            100%    { opacity: 0; display: none;}
+        }
+    </style>
+    <title>Waterdeep Complaint Registry</title>
+</head>
+<body>
+    <nav><a href="">Home</a></nav>
+    <h1>Register Complaint</h1>
+
+    <form>
+        <fieldset style="width:200px ;">
+            <legend>Complaint Description</legend>
+            <textarea name="" id="inputComplaint" cols="50" rows="10" required minlength="1" maxlength="400"></textarea>
+        </fieldset>
+        <button>Submit Complaint</button>
+    </form>
+    <p class="fadingout" id="complaintSuccessful" style="background-color:chartreuse; width: 250px; display: none;">Complaint Successfully Lodged!</p>
+</body>
+<script>
+    const inputComplaint = document.getElementById("inputComplaint");
+
+    document.addEventListener("submit", async event => {
+        event.preventDefault();
+        const description = inputComplaint.value;
+
+        const complaint = {description};
+        const response = await fetch("http://localhost:8080/complaints",{
+            method:"POST",
+            body: JSON.stringify(complaint),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        if(response.status === 201){
+            inputComplaint.value = "";
+            const complaintSuccessful = document.getElementById("complaintSuccessful");
+            complaintSuccessful.style.display = "block";
+            complaintSuccessful.className = "";
+            requestAnimationFrame((time) => {
+                requestAnimationFrame((time) => {
+                    complaintSuccessful.className = "fadingout";
+                });
+            });
+        }else{
+            alert("Something went wrong server side!")
+        }
+    });
+</script>
+</html>
