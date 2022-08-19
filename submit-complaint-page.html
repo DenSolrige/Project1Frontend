@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <style>
+        body {
+            font-family: 'lato', sans-serif;
+        }
         .fadingout {
             animation: fadeout .5s ease-in;
             animation-delay: 3.5s;
@@ -16,7 +19,7 @@
     <title>Waterdeep Complaint Registry</title>
 </head>
 <body>
-    <nav><a href="">Home</a></nav>
+    <nav><a href="homepage.html">Home</a></nav>
     <h1>Register Complaint</h1>
 
     <form>
@@ -36,7 +39,7 @@
         const description = inputComplaint.value;
 
         const complaint = {description};
-        const response = await fetch("http://localhost:8080/complaints",{
+        const response = await fetch("http://localhost:8888/complaints",{
             method:"POST",
             body: JSON.stringify(complaint),
             headers:{
@@ -57,5 +60,6 @@
             alert("Something went wrong server side!")
         }
     });
+    
 </script>
 </html>
