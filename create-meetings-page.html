@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: 'lato', sans-serif;
+        }
+        .fadingout {
+            animation: fadeout .5s ease-in;
+            animation-delay: 3.5s;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeout{
+            0%    { opacity: 1}
+            100%    { opacity: 0; display: none;}
+        }
+    </style>
+    <title>Waterdeep Complaint Registry</title>
+</head>
+<body>
+    <nav><a href="homepage.html">Home</a></nav>
+    <h1>Create Meetings</h1>
+
+    <form>
+        <fieldset style="width:200px ;">
+            <legend>Meeting Details</legend>
+
+            <label for="meetingDescription">Meeting Description</label>
+            <textarea name="" id="meetingDescription" cols="50" rows="10" required minlength="1" maxlength="400"></textarea>
+
+            <br>
+            <label for="meetingLocation">Meeting Location</label>
+            <input type="text" id="meetingLocation" minlength="1" maxlength="40">
+
+            <br>
+            <label for="meetingTime">Meeting (date and time):</label>
+            <input type="datetime-local" id="meetingTime" name="meetingTime">
+        </fieldset>
+        <button>Submit Complaint</button>
+    </form>
+    <p class="fadingout" id="meetingSuccessful" style="background-color:chartreuse; width: 250px; display: none;">Meeting Successfully Created!</p>
+</body>
+<script>
+    const meetingDescription = document.getElementById("meetingDescription");
+    const meetingLocation = document.getElementById("meetingLocation");
+    const meetingTime = document.getElementById("meetingTime");
+
+    document.addEventListener("submit", async event => {
+        event.preventDefault();
+        const description = meetingDescription.value;
+        const address = meetingLocation.value;
+        const time = Date.parse(meetingTime.value)/1000;
+
+        const meeting = {description,address,time};
+
+        const response = await fetch("http://localhost:8080/meetings",{
+            method:"POST",
+            body: JSON.stringify(meeting),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        if(response.status === 201){
+            meetingDescription.value = "";
+            meetingLocation.value = "";
+            meetingTime.value = "";
+            const meetingSuccessful = document.getElementById("meetingSuccessful");
+            meetingSuccessful.style.display = "block";
+            meetingSuccessful.className = "";
+            requestAnimationFrame((time) => {
+                requestAnimationFrame((time) => {
+                    meetingSuccessful.className = "fadingout";
+                });
+            });
+        }else{
+            alert("Something went wrong server side!")
+        }
+    });
+    
+</script>
+</html>

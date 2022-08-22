@@ -82,6 +82,9 @@
             if(meeting.meetingId === -1){
                 continue;
             }
+            if(meeting.description.includes("-ignore")){
+                continue
+            }
             const meetingRow = document.createElement("tr");
             const meetingDescription = document.createElement("td");
             meetingDescription.innerText = meeting.description;
