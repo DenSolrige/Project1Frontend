@@ -59,10 +59,33 @@
         </thead>
         <tbody id="meetingTable"></tbody>
     </table>
+    <br>
+    <h2 id="specificMeetingLabel">Click an above meeting to see the complaints covered</h2>
+    <table class="styled-table">
+        <thead>
+            <tr><th>Complaint Description</th><th>Complaint Status</th>
+        </thead>
+        <tbody id="specificMeetingTable">
+            <tr><td class="long-row" colspan="2">No meeting selected!</td></tr>
+        </tbody>
+    </table>
 </body>
 
 <script>
     const meetingTable = document.getElementById("meetingTable");
+    const specificMeetingTable = document.getElementById("specificMeetingTable");
+    const specificMeetingLabel = document.getElementById("specificMeetingLabel");
+
+    async function getComplaints(){
+        const response = await fetch("http://localhost:8888/complaints",{
+            method:"GET",
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        const complaints = await response.json();
+        return complaints;
+    }
 
     async function getMeetings(){
         const response = await fetch("http://localhost:8888/meetings",{
@@ -77,6 +100,8 @@
 
     async function renderMeetingTable(){
         const meetings = await getMeetings();
+        const complaints = await getComplaints();
+
         meetings.sort((a,b) => (a.time < b.time)? 1 : -1);
         for(let meeting of meetings){
             if(meeting.meetingId === -1){
@@ -103,8 +128,38 @@
             meetingRow.appendChild(meetingDate);
             meetingRow.className = "table-row-glow";
             meetingRow.addEventListener("click", function(){
-                window.location.href = "view-specific-meeting-page.html?meetingId="+meeting.meetingId;
-            });
+                specificMeetingLabel.innerText = "Complaints covered in: "+meeting.description;
+                let relevantComplaints = complaints.filter(complaint => complaint.meetingId == meeting.meetingId);
+                console.log(relevantComplaints)
+                while(specificMeetingTable.firstChild){
+                    specificMeetingTable.firstChild.remove();
+                }
+                console.log(relevantComplaints.length);
+                if(relevantComplaints.length == 0){
+                    const row = document.createElement("tr");
+                    const data = document.createElement("td");
+                    data.colSpan = "2";
+                    data.innerText = "No complaints covered in selected meeting";
+                    row.appendChild(data);
+                    console.log(row);
+                    specificMeetingTable.appendChild(row);
+                    return;
+                }
+                for(let complaint of relevantComplaints){
+                    const complaintRow = document.createElement("tr");
+
+                    const complaintDescription = document.createElement("td");
+                    complaintDescription.innerText = complaint.description;
+
+                    const complaintStatus = document.createElement("td");
+                    complaintStatus.innerText = complaint.complaintStatus;
+
+                    complaintRow.appendChild(complaintDescription);
+                    complaintRow.appendChild(complaintStatus);
+                    specificMeetingTable.appendChild(complaintRow);
+                }
+                
+                });
             meetingTable.appendChild(meetingRow);
         }
     }

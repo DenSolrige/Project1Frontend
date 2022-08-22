@@ -7,7 +7,7 @@
             margin: 25px 0;
             font-size: 0.9em;
             font-family: sans-serif;
-            min-width: 400px;
+            min-width: 600px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
         }
         .styled-table thead tr {
@@ -55,7 +55,7 @@
 
         .dropdown {
             position: relative;
-            display: inline-block;
+            display:table-header-group;
         }
 
         .dropdown-content {
@@ -96,7 +96,7 @@
     
     <table class="styled-table">
         <thead>
-            <tr><th>Complaint Description</th><th>Complaint Status</th><th>Associated Meeting</th></tr>
+            <th>Complaint Description</th><th>Complaint Status</th><th>Associated Meeting</th>
         </thead>
         <tbody id="High_PriorityComplaints"><tr><td class="long-row" colspan="3">High Priority Complaints</td></tr></tbody>
         <tbody id="UnreviewedComplaints"><tr><td class="long-row" colspan="3">Unreviewed Complaints</td></tr></tbody>
@@ -125,6 +125,17 @@
         return complaints;
     }
 
+    async function getMeetings(){
+        const response = await fetch("http://localhost:8888/meetings",{
+            method:"GET",
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        const meetings = await response.json();
+        return meetings;
+    }
+
     async function updateComplaint(complaintId,description,complaintStatus,meetingId){
         complaint = {complaintId,description,complaintStatus,meetingId}
         const response = await fetch("http://localhost:8888/complaints",{
@@ -140,6 +151,9 @@
 
     async function renderComplaintTable(){
         const complaints = await getComplaints();
+        const meetings = await getMeetings();
+        const relevantMeetings = meetings.filter(meeting => meeting.meetingId != -1 && !meeting.description.includes("-ignore"));
+        console.log(relevantMeetings.find(meeting => meeting.meetingId == 1));
         complaints.sort((a,b) => (a.complaintId > b.complaintId) ? 1:-1)
         for(let complaint of complaints){
             const complaintRow = document.createElement("tr");
@@ -147,49 +161,94 @@
             const complaintDescription = document.createElement("td");
             complaintDescription.innerText = complaint.description;
 
-            const dropdown = document.createElement("div");
-            dropdown.className = "dropdown";
-            const button = document.createElement("button");
-            button.className = "dropbtn";
-            button.innerText = (complaint.complaintStatus).replace("_"," ");
-            button.onclick = function(){
-                document.getElementById("myDropdown"+complaint.complaintId).classList.toggle("show");
+            const statusDropdown = document.createElement("td");
+            statusDropdown.className = "dropdown";
+            const statusButton = document.createElement("button");
+            statusButton.className = "dropbtn";
+            statusButton.innerText = (complaint.complaintStatus).replace("_"," ");
+            statusButton.onclick = function(){
+                document.getElementById("myStatusDropdown"+complaint.complaintId).classList.toggle("show");
             }
-            dropdown.appendChild(button);
-            const myDropdown = document.createElement("div");
-            myDropdown.id = "myDropdown"+complaint.complaintId;
-            myDropdown.className = "dropdown-content";
-            dropdown.appendChild(myDropdown);
+            statusDropdown.appendChild(statusButton);
+            const myStatusDropdown = document.createElement("div");
+            myStatusDropdown.id = "myStatusDropdown"+complaint.complaintId;
+            myStatusDropdown.className = "dropdown-content";
+            statusDropdown.appendChild(myStatusDropdown);
             const stausesForBackend = ["Unreviewed","High_Priority","Low_Priority","Ignored","Addressed"];
             const stausesForFrontend = ["Unreviewed","High Priority","Low Priority","Ignored","Addressed"];
-            
+
             for(let i = 0; i<5; i++){
                 const p = document.createElement("p");
                 p.innerText = stausesForFrontend[i];
-                p.id = stausesForBackend[i];
+                //p.id = stausesForBackend[i];
                 p.addEventListener("click", async function(){
                     updatedComplaint = await updateComplaint(complaint.complaintId,complaint.description,stausesForBackend[i],complaint.meetingId);
                     document.getElementById(stausesForBackend[i]+"Complaints").appendChild(this.parentElement.parentElement.parentElement);
                     this.parentElement.parentElement.firstChild.innerText = stausesForFrontend[i];
-                    this.parentElement.querySelector(stausesForBackend[i]);
+                    //this.parentElement.querySelector(stausesForBackend[i]);
                 });
-                myDropdown.appendChild(p);
+                myStatusDropdown.appendChild(p);
             }
 
-            const complaintMeetingId = document.createElement("td");
+
+
+            const meetingDropdown = document.createElement("td");
+            meetingDropdown.className = "dropdown";
+            const meetingButton = document.createElement("button");
+            meetingButton.className = "dropbtn";
             if(complaint.meetingId == -1){
-                complaintMeetingId.innerText = "No current meeting attached";
+                meetingButton.innerText = "No current meeting attached";
             }else{
-                complaintMeetingId.innerText = complaint.meetingId;
+                meetingButton.innerText = relevantMeetings.find(meeting => meeting.meetingId == complaint.meetingId).description;
             }
+            meetingButton.onclick = function(){
+                document.getElementById("myMeetingDropdown"+complaint.complaintId).classList.toggle("show");
+            }
+            meetingDropdown.appendChild(meetingButton);
+            const myMeetingDropdown = document.createElement("div");
+            myMeetingDropdown.id = "myMeetingDropdown"+complaint.complaintId;
+            myMeetingDropdown.className = "dropdown-content";
+            meetingDropdown.appendChild(myMeetingDropdown);
+
+            for(let meeting of relevantMeetings){
+                const p = document.createElement("p");
+                p.innerText = meeting.description;
+                //p.id = stausesForBackend[i];
+                p.addEventListener("click", async function(){
+                    //updatedComplaint = await updateComplaint(complaint.complaintId,complaint.description,stausesForBackend[i],complaint.meetingId);
+                    //document.getElementById(stausesForBackend[i]+"Complaints").appendChild(this.parentElement.parentElement.parentElement);
+                    //this.parentElement.parentElement.firstChild.innerText = stausesForFrontend[i];
+                    //this.parentElement.querySelector(stausesForBackend[i]);
+                });
+                myMeetingDropdown.appendChild(p);
+            }
+
+
+
+
+            // const complaintMeetingId = document.createElement("td");
+            // if(complaint.meetingId == -1){
+            //     complaintMeetingId.innerText = "No current meeting attached";
+            // }else{
+            //     complaintMeetingId.innerText = complaint.meetingId;
+            // }
 
             complaintRow.appendChild(complaintDescription);
-            complaintRow.appendChild(dropdown);
-            complaintRow.appendChild(complaintMeetingId);
+            complaintRow.appendChild(statusDropdown);
+            complaintRow.appendChild(meetingDropdown);
             document.getElementById(complaint.complaintStatus+"Complaints").appendChild(complaintRow);
         }
     }
-
+    document.addEventListener("click", function(event){
+        if(event.target.classList != 0){
+            return;
+        }
+        const dropdown = document.getElementsByClassName("dropdown-content show");
+        if(dropdown[0]==undefined){
+            return;
+        }
+        dropdown[0].classList.toggle("show");
+    });
     renderComplaintTable();
 </script>
 
