@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .styled-table {
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+        .styled-table thead tr {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: left;
+            border-right: 3px solid #009879;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+            border-right: 3px solid #009879;
+        }
+
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #009879;
+            border-right: 3px solid #009879;
+        }
+        .styled-table tbody tr.active-row {
+            font-weight: bold;
+            color: #009879;
+        }
+        .long-row{
+            text-align: center;
+        }
+        .dropbtn {
+            background-color: #009879;
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropbtn:hover{
+            background-color: #33d8b7;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 80px;
+            overflow: auto;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown p:hover {background-color: #ddd;}
+
+        .show {display: block;}
+
+        .hide > *{display: none;}
+
+        p:hover{
+            cursor:pointer
+        }
+    
+    </style>
+    <title>View Complaints</title>
+</head>
+<body>
+    <nav><a href="homepage.html">Home</a></nav>
+    <h1>All Complaints</h1>
+    <label for="showCheckbox">Hide Ignored Complaints</label>
+    <input type="checkbox" id="showCheckbox" name="showCheckbox" value="show">
+    
+    <table class="styled-table">
+        <thead>
+            <tr><th>Complaint Description</th><th>Complaint Status</th><th>Associated Meeting</th></tr>
+        </thead>
+        <tbody id="High_PriorityComplaints"><tr><td class="long-row" colspan="3">High Priority Complaints</td></tr></tbody>
+        <tbody id="UnreviewedComplaints"><tr><td class="long-row" colspan="3">Unreviewed Complaints</td></tr></tbody>
+        <tbody id="Low_PriorityComplaints"><tr><td class="long-row" colspan="3">Low Priority Complaints</td></tr></tbody>
+        <tbody id="AddressedComplaints"><tr><td class="long-row" colspan="3">Addressed Complaints</td></tr></tbody>
+        <tbody id="IgnoredComplaints"><tr><td class="long-row hide" colspan="3">Ignored Complaints</td></tr></tbody>
+    </table>
+</body>
+
+<script>
+    const complaintTable = document.getElementById("complaintTable");
+    const showCheckbox = document.getElementById("showCheckbox");
+
+    showCheckbox.addEventListener("change",function(){
+        document.getElementById("IgnoredComplaints").classList.toggle("hide");
+    });
+
+    async function getComplaints(){
+        const response = await fetch("http://localhost:8888/complaints",{
+            method:"GET",
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        const complaints = await response.json();
+        return complaints;
+    }
+
+    async function updateComplaint(complaintId,description,complaintStatus,meetingId){
+        complaint = {complaintId,description,complaintStatus,meetingId}
+        const response = await fetch("http://localhost:8888/complaints",{
+            method:"PATCH",
+            body: JSON.stringify(complaint),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        const updatedComplaint = await response.json();
+        return updatedComplaint;
+    }
+
+    async function renderComplaintTable(){
+        const complaints = await getComplaints();
+        complaints.sort((a,b) => (a.complaintId > b.complaintId) ? 1:-1)
+        for(let complaint of complaints){
+            const complaintRow = document.createElement("tr");
+
+            const complaintDescription = document.createElement("td");
+            complaintDescription.innerText = complaint.description;
+
+            const dropdown = document.createElement("div");
+            dropdown.className = "dropdown";
+            const button = document.createElement("button");
+            button.className = "dropbtn";
+            button.innerText = (complaint.complaintStatus).replace("_"," ");
+            button.onclick = function(){
+                document.getElementById("myDropdown"+complaint.complaintId).classList.toggle("show");
+            }
+            dropdown.appendChild(button);
+            const myDropdown = document.createElement("div");
+            myDropdown.id = "myDropdown"+complaint.complaintId;
+            myDropdown.className = "dropdown-content";
+            dropdown.appendChild(myDropdown);
+            const stausesForBackend = ["Unreviewed","High_Priority","Low_Priority","Ignored","Addressed"];
+            const stausesForFrontend = ["Unreviewed","High Priority","Low Priority","Ignored","Addressed"];
+            
+            for(let i = 0; i<5; i++){
+                const p = document.createElement("p");
+                p.innerText = stausesForFrontend[i];
+                p.id = stausesForBackend[i];
+                p.addEventListener("click", async function(){
+                    updatedComplaint = await updateComplaint(complaint.complaintId,complaint.description,stausesForBackend[i],complaint.meetingId);
+                    document.getElementById(stausesForBackend[i]+"Complaints").appendChild(this.parentElement.parentElement.parentElement);
+                    this.parentElement.parentElement.firstChild.innerText = stausesForFrontend[i];
+                    this.parentElement.querySelector(stausesForBackend[i]);
+                });
+                myDropdown.appendChild(p);
+            }
+
+            const complaintMeetingId = document.createElement("td");
+            if(complaint.meetingId == -1){
+                complaintMeetingId.innerText = "No current meeting attached";
+            }else{
+                complaintMeetingId.innerText = complaint.meetingId;
+            }
+
+            complaintRow.appendChild(complaintDescription);
+            complaintRow.appendChild(dropdown);
+            complaintRow.appendChild(complaintMeetingId);
+            document.getElementById(complaint.complaintStatus+"Complaints").appendChild(complaintRow);
+        }
+    }
+
+    renderComplaintTable();
+</script>
+
+</html>

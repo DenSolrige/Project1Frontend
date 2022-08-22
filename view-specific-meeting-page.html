@@ -1,9 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title></title>
+    <style>
+        .styled-table {
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+        .styled-table thead tr {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: left;
+            border-right: 3px solid #009879;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+            border-right: 3px solid #009879;
+        }
+
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #009879;
+            border-right: 3px solid #009879;
+        }
+        .styled-table tbody tr.active-row {
+            font-weight: bold;
+            color: #009879;
+        }
+        .table-row-glow:hover {
+            border-bottom: 3px solid #33d8b7;
+            border-right: 3px solid #33d8b7;
+            cursor:pointer
+        }
+        .styled-table tbody tr:last-of-type:hover {
+            border-bottom: 3px solid #33d8b7;
+            border-right: 3px solid #33d8b7;
+        }
+    
+    </style>
+    <title>View Complaints</title>
 </head>
 <body>
-    
+    <nav><a href="homepage.html">Home</a></nav>
+    <h1>All Complaints</h1>
+    <table class="styled-table">
+        <thead>
+            <tr><th>Complaint Description</th><th>Complaint Status</th><th>Associated Meeting</th></tr>
+        </thead>
+        <tbody id="meetingTable">
+            <tr><td colspan="3">High Priority Complaints</td></tr>
+        </tbody>
+    </table>
 </body>
+
+<script>
+    const meetingTable = document.getElementById("meetingTable");
+
+    async function getMeetings(){
+        const response = await fetch("http://localhost:8888/meetings",{
+            method:"GET",
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        const meetings = await response.json();
+        return meetings;
+    }
+
+    async function renderMeetingTable(){
+        const meetings = await getMeetings();
+        meetings.sort((a,b) => (a.time < b.time)? 1 : -1);
+        for(let meeting of meetings){
+            if(meeting.meetingId === -1){
+                continue;
+            }
+            const meetingRow = document.createElement("tr");
+            const meetingDescription = document.createElement("td");
+            meetingDescription.innerText = meeting.description;
+            const meetingLocation = document.createElement("td");
+            meetingLocation.innerText = meeting.address;
+            const meetingDate = document.createElement("td");
+
+            const date = new Date(meeting.time * 1000);
+            const hours = date.getHours();
+            const minutes = "0" + date.getMinutes();
+            const formattedTime =  hours + ':' + minutes.substr(-2)+' on '+ date.getMonth() +'/'+ date.getDate()+'/'+date.getFullYear();
+            meetingDate.innerText = formattedTime;
+
+            meetingRow.appendChild(meetingDescription);
+            meetingRow.appendChild(meetingLocation);
+            meetingRow.appendChild(meetingDate);
+            meetingRow.className = "table-row-glow";
+            meetingRow.addEventListener("click", function(){
+                window.location.href = "view-specific-meeting-page.html?meetingId="+meeting.meetingId;
+            });
+            meetingTable.appendChild(meetingRow);
+        }
+    }
+
+    renderMeetingTable();
+</script>
+
 </html>
