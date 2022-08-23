@@ -130,18 +130,15 @@
             meetingRow.addEventListener("click", function(){
                 specificMeetingLabel.innerText = "Complaints covered in: "+meeting.description;
                 let relevantComplaints = complaints.filter(complaint => complaint.meetingId == meeting.meetingId);
-                console.log(relevantComplaints)
                 while(specificMeetingTable.firstChild){
                     specificMeetingTable.firstChild.remove();
                 }
-                console.log(relevantComplaints.length);
                 if(relevantComplaints.length == 0){
                     const row = document.createElement("tr");
                     const data = document.createElement("td");
                     data.colSpan = "2";
                     data.innerText = "No complaints covered in selected meeting";
                     row.appendChild(data);
-                    console.log(row);
                     specificMeetingTable.appendChild(row);
                     return;
                 }
@@ -152,7 +149,7 @@
                     complaintDescription.innerText = complaint.description;
 
                     const complaintStatus = document.createElement("td");
-                    complaintStatus.innerText = complaint.complaintStatus;
+                    complaintStatus.innerText = complaint.complaintStatus.replace("_"," ");
 
                     complaintRow.appendChild(complaintDescription);
                     complaintRow.appendChild(complaintStatus);
