@@ -55,7 +55,6 @@
 
         .dropdown {
             position: relative;
-            display:table-header-group;
         }
 
         .dropdown-content {
@@ -96,7 +95,7 @@
     
     <table class="styled-table">
         <thead>
-            <th>Complaint Description</th><th>Complaint Status</th><th>Associated Meeting</th>
+            <tr><th>Complaint Description</th><th>Complaint Status</th><th>Associated Meeting</th></tr>
         </thead>
         <tbody id="High_PriorityComplaints"><tr><td class="long-row" colspan="3">High Priority Complaints</td></tr></tbody>
         <tbody id="UnreviewedComplaints"><tr><td class="long-row" colspan="3">Unreviewed Complaints</td></tr></tbody>
@@ -153,7 +152,6 @@
         const complaints = await getComplaints();
         const meetings = await getMeetings();
         const relevantMeetings = meetings.filter(meeting => meeting.meetingId != -1 && !meeting.description.includes("-ignore"));
-        console.log(relevantMeetings.find(meeting => meeting.meetingId == 1));
         complaints.sort((a,b) => (a.complaintId > b.complaintId) ? 1:-1)
         for(let complaint of complaints){
             const complaintRow = document.createElement("tr");
@@ -180,17 +178,13 @@
             for(let i = 0; i<5; i++){
                 const p = document.createElement("p");
                 p.innerText = stausesForFrontend[i];
-                //p.id = stausesForBackend[i];
                 p.addEventListener("click", async function(){
                     updatedComplaint = await updateComplaint(complaint.complaintId,complaint.description,stausesForBackend[i],complaint.meetingId);
                     document.getElementById(stausesForBackend[i]+"Complaints").appendChild(this.parentElement.parentElement.parentElement);
                     this.parentElement.parentElement.firstChild.innerText = stausesForFrontend[i];
-                    //this.parentElement.querySelector(stausesForBackend[i]);
                 });
                 myStatusDropdown.appendChild(p);
             }
-
-
 
             const meetingDropdown = document.createElement("td");
             meetingDropdown.className = "dropdown";
@@ -213,25 +207,12 @@
             for(let meeting of relevantMeetings){
                 const p = document.createElement("p");
                 p.innerText = meeting.description;
-                //p.id = stausesForBackend[i];
                 p.addEventListener("click", async function(){
-                    //updatedComplaint = await updateComplaint(complaint.complaintId,complaint.description,stausesForBackend[i],complaint.meetingId);
-                    //document.getElementById(stausesForBackend[i]+"Complaints").appendChild(this.parentElement.parentElement.parentElement);
-                    //this.parentElement.parentElement.firstChild.innerText = stausesForFrontend[i];
-                    //this.parentElement.querySelector(stausesForBackend[i]);
+                    updatedComplaint = await updateComplaint(complaint.complaintId,complaint.description,complaint.complaintStatus,meeting.meetingId);
+                    this.parentElement.parentElement.firstChild.innerText = meeting.description;
                 });
                 myMeetingDropdown.appendChild(p);
             }
-
-
-
-
-            // const complaintMeetingId = document.createElement("td");
-            // if(complaint.meetingId == -1){
-            //     complaintMeetingId.innerText = "No current meeting attached";
-            // }else{
-            //     complaintMeetingId.innerText = complaint.meetingId;
-            // }
 
             complaintRow.appendChild(complaintDescription);
             complaintRow.appendChild(statusDropdown);
