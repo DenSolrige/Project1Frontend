@@ -120,7 +120,7 @@
             const date = new Date(meeting.time * 1000);
             const hours = date.getHours();
             const minutes = "0" + date.getMinutes();
-            const formattedTime =  hours + ':' + minutes.substr(-2)+' on '+ date.getMonth() +'/'+ date.getDate()+'/'+date.getFullYear();
+            const formattedTime =  hours + ':' + minutes.substr(-2)+' on '+ (Number(date.getMonth())+1) +'/'+ date.getDate()+'/'+date.getFullYear();
             meetingDate.innerText = formattedTime;
 
             meetingRow.appendChild(meetingDescription);
