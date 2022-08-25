@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Signup!</title>
+</head>
+<body>
+    <nav><a href="homepage.html">Home</a></nav>
+    <h1>Create Account</h1>
+
+    <form>
+        <fieldset style="width:200px ;">
+            <legend>Account Details</legend>
+            <label for="fnameInput">First Name:</label>
+            <br>
+            <input id="fnameInput" type="text" minlength="1" maxlength="40">
+            <br>
+            <label for="lnameInput">Last Name</label>
+            <br>
+            <input id="lnameInput" type="text" minlength="1" maxlength="40">
+            <br>
+            <label for="usernameInput">Username</label>
+            <br>
+            <input id="usernameInput" type="text" minlength="1" maxlength="40">
+            <br>
+            <label for="passwordInput">Password</label>
+            <br>
+            <input id="passwordInput" type="password" minlength="1" maxlength="40">
+        </fieldset>
+        <button>Sign up</button>
+    </form>
+</body>
+<script>
+    const fnameInput = document.getElementById("fnameInput");
+    const lnameInput = document.getElementById("lnameInput");
+    const usernameInput = document.getElementById("usernameInput");
+    const passwordInput = document.getElementById("passwordInput");
+
+    document.addEventListener("submit", async event => {
+        event.preventDefault();
+        const fname = fnameInput.value;
+        const lname = lnameInput.value;
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        const constituent = {fname,lname,username,password,isCouncilMember:false,isRegistered:false};
+        const response = await fetch("http://localhost:8080/signup",{
+            method:"POST",
+            body: JSON.stringify(constituent),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        if(response.status === 201){
+            document.location.href = "homepage.html";
+        }
+        else if (response.status === 400){
+            alert("Username already in use!")
+        }
+        else{
+            alert("Something went wrong server side!")
+        }
+    });
+</script>
+</html>
