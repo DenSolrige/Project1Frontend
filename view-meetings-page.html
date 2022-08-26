@@ -46,6 +46,10 @@
             border-bottom: 3px solid #33d8b7;
             border-right: 3px solid #33d8b7;
         }
+        button{
+            background-color: #009879;
+            color: white;
+        }
     
     </style>
     <title>Waterdeep Upcoming Meetings</title>
@@ -69,12 +73,27 @@
             <tr><td class="long-row" colspan="2">No meeting selected!</td></tr>
         </tbody>
     </table>
+    <h2 id="specificMeetingSpeakersLabel">Click an above meeting to see who is speaking at that meeting</h2>
+    <table class="styled-table">
+        <thead>
+            <tr><th>Speaker Name</th></tr>
+        </thead>
+        <tbody id="specificMeetingSpeakersTable">
+            <tr><td class="long-row">No meeting selected!</td></tr>
+        </tbody>
+    </table>
+    <button id="speakBtn" style="display: none;">I wish to speak at this meeting</button>
 </body>
 
 <script>
+    const user = JSON.parse(localStorage.getItem("user"));
     const meetingTable = document.getElementById("meetingTable");
     const specificMeetingTable = document.getElementById("specificMeetingTable");
     const specificMeetingLabel = document.getElementById("specificMeetingLabel");
+    const specificMeetingSpeakersTable = document.getElementById("specificMeetingSpeakersTable");
+    const specificMeetingSpeakersLabel = document.getElementById("specificMeetingSpeakersLabel");
+    const speakBtn = document.getElementById("speakBtn");
+    let selectedMeetingId = undefined;
 
     async function getComplaints(){
         const response = await fetch("http://localhost:8888/complaints",{
@@ -98,7 +117,29 @@
         return meetings;
     }
 
+    async function getSpeakers(){
+        const response = await fetch("http://localhost:8080/meetings/speakers",{
+            method:"GET",
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        const meetingSpeakers = await response.json();
+        return meetingSpeakers;
+    }
+
+    async function addSpeaker(meetingSpeaker){
+        const response = await fetch("http://localhost:8080/meetings/speakers",{
+            method:"put",
+            body: JSON.stringify(meetingSpeaker),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+    }
+
     async function renderMeetingTable(){
+        const speakers = await getSpeakers();
         const meetings = await getMeetings();
         const complaints = await getComplaints();
 
@@ -110,6 +151,10 @@
             if(meeting.description.includes("-ignore")){
                 continue
             }
+            const relevantSpeakers = speakers.filter(s => {
+                return s.meetingId == meeting.meetingId;
+            });
+            console.log(relevantSpeakers)
             const meetingRow = document.createElement("tr");
             const meetingDescription = document.createElement("td");
             meetingDescription.innerText = meeting.description;
@@ -128,6 +173,10 @@
             meetingRow.appendChild(meetingDate);
             meetingRow.className = "table-row-glow";
             meetingRow.addEventListener("click", function(){
+                if(user != null && user.isRegistered){
+                    speakBtn.style = "display: show;";
+                }
+                selectedMeetingId = meeting.meetingId;
                 specificMeetingLabel.innerText = "Complaints covered in: "+meeting.description;
                 let relevantComplaints = complaints.filter(complaint => complaint.meetingId == meeting.meetingId);
                 while(specificMeetingTable.firstChild){
@@ -140,7 +189,6 @@
                     data.innerText = "No complaints covered in selected meeting";
                     row.appendChild(data);
                     specificMeetingTable.appendChild(row);
-                    return;
                 }
                 for(let complaint of relevantComplaints){
                     const complaintRow = document.createElement("tr");
@@ -155,11 +203,38 @@
                     complaintRow.appendChild(complaintStatus);
                     specificMeetingTable.appendChild(complaintRow);
                 }
-                
-                });
+                while(specificMeetingSpeakersTable.firstChild){
+                    specificMeetingSpeakersTable.firstChild.remove();
+                }
+                if(relevantSpeakers.length == 0){
+                    const row = document.createElement("tr");
+                    const data = document.createElement("td");
+                    data.innerText = "Nobody is speaking at the selected meeting";
+                    row.appendChild(data);
+                    specificMeetingSpeakersTable.appendChild(row);
+                }
+                specificMeetingSpeakersLabel.innerText = "Speakers for "+meeting.description;
+                for(let speaker of relevantSpeakers){
+                    if(user != null && user.isRegistered && speaker.username == user.username){
+                        speakBtn.style = "display: none;";
+                    }
+                    const speakerRow = document.createElement("tr");
+                    const speakerName = document.createElement("td");
+                    speakerName.innerText = speaker.fname + " " + speaker.lname;
+                    speakerRow.appendChild(speakerName);
+                    specificMeetingSpeakersTable.appendChild(speakerRow);
+                }
+            });
+
             meetingTable.appendChild(meetingRow);
         }
     }
+
+    speakBtn.addEventListener("click", async function(){
+        const meetingSpeaker = {"meetingId":selectedMeetingId,"username":user.username};
+        await addSpeaker(meetingSpeaker);
+        location.reload();
+    });
 
     renderMeetingTable();
 </script>
