@@ -1,20 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        a,p{
+            background-color: #009879;
+            color: white;
+            padding: 3px;
+        }
+        p {
+            display: inline;
+        }
+    </style>
     <title>Waterdeep Complaint Registry</title>
 </head>
 <body>
     <nav>
         <a href="submit-complaint-page.html">Register Complaint</a>
         <a href="view-meetings-page.html">View Upcoming Meetings</a>
-        <a href="view-complaints-page.html">View Complaints (ONLY VIEWABLE BY COUNCIL MEMBERS)</a>
-        <a href="create-meetings-page.html">Create Meetings (ONLY VIEWABLE BY COUNCIL MEMBERS)</a>
+        <a href="view-complaints-page.html" id="viewComplaints">View Complaints</a>
+        <a href="create-meetings-page.html" id="createMeetings">Create Meetings</a>
         <div style="float: right">
-            <a href="login-page.html">Login</a>
-            <a href="">Logout</a>
-            <a href="signup-page.html">Signup</a>
+            <p id="loggedin">Logged in as: </p>
+            <a href="login-page.html" id="login">Login</a>
+            <a href="" id="logout">Logout</a>
+            <a href="signup-page.html" id="signup">Signup</a>
         </div>
     </nav>
     <h1>Waterdeep Complaint Registry</h1>
 </body>
+<script>
+    const viewComplaints = document.getElementById("viewComplaints");
+    const createMeetings = document.getElementById("createMeetings");
+    const loggedin = document.getElementById("loggedin");
+    const login = document.getElementById("login");
+    const logout = document.getElementById("logout");
+    const signup = document.getElementById("signup");
+
+    //console.log(localStorage.getItem("user"));
+    user = JSON.parse(localStorage.getItem("user"));
+
+    if(user == null){
+        viewComplaints.style = "display:none";
+        createMeetings.style = "display:none";
+        logout.style = "display:none";
+        loggedin.style = "display:none";
+    }else if(!user.isCouncilMember){
+        viewComplaints.style = "display:none";
+        createMeetings.style = "display:none";
+    }
+    if(user != null){
+        login.style = "display:none";
+        signup.style = "display:none";
+        loggedin.innerText = loggedin.innerText+user.username;
+    }
+
+    logout.addEventListener("click",function(){
+        localStorage.clear();
+    });
+</script>
 </html>
