@@ -110,7 +110,7 @@
     const constituentTable = document.getElementById("constituentTable");
 
     async function getConstituents(){
-        const response = await fetch("http://localhost:8080/constituents",{
+        const response = await fetch("http://localhost:8888/constituents",{
             method:"GET",
             headers:{
                 "Content-Type":"application/json"
@@ -125,7 +125,7 @@
     }
 
     async function updateConstituent(constituent){
-        const response = await fetch("http://localhost:8080/constituents",{
+        const response = await fetch("http://localhost:8888/constituents",{
             method:"PATCH",
             body: constituent,
             headers:{

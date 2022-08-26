@@ -118,7 +118,7 @@
     }
 
     async function getSpeakers(){
-        const response = await fetch("http://localhost:8080/meetings/speakers",{
+        const response = await fetch("http://localhost:8888/meetings/speakers",{
             method:"GET",
             headers:{
                 "Content-Type":"application/json"
@@ -129,7 +129,7 @@
     }
 
     async function addSpeaker(meetingSpeaker){
-        const response = await fetch("http://localhost:8080/meetings/speakers",{
+        const response = await fetch("http://localhost:8888/meetings/speakers",{
             method:"put",
             body: JSON.stringify(meetingSpeaker),
             headers:{
