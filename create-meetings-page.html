@@ -42,6 +42,13 @@
     <p class="fadingout" id="meetingSuccessful" style="background-color:chartreuse; width: 250px; display: none;">Meeting Successfully Created!</p>
 </body>
 <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if(user == null){
+        document.location.href = "homepage.html";
+    }
+    if(!user.isCouncilMember){
+        document.location.href = "homepage.html";
+    }
     const meetingDescription = document.getElementById("meetingDescription");
     const meetingLocation = document.getElementById("meetingLocation");
     const meetingTime = document.getElementById("meetingTime");

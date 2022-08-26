@@ -106,6 +106,13 @@
 </body>
 
 <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if(user == null){
+        document.location.href = "homepage.html";
+    }
+    if(!user.isCouncilMember){
+        document.location.href = "homepage.html";
+    }
     const complaintTable = document.getElementById("complaintTable");
     const showCheckbox = document.getElementById("showCheckbox");
 

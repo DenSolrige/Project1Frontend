@@ -100,6 +100,13 @@
 </body>
 
 <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if(user == null){
+        document.location.href = "homepage.html";
+    }
+    if(!user.isCouncilMember){
+        document.location.href = "homepage.html";
+    }
     const constituentTable = document.getElementById("constituentTable");
 
     async function getConstituents(){

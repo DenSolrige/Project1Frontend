@@ -19,6 +19,7 @@
         <a href="view-meetings-page.html">View Upcoming Meetings</a>
         <a href="view-complaints-page.html" id="viewComplaints">View Complaints</a>
         <a href="create-meetings-page.html" id="createMeetings">Create Meetings</a>
+        <a href="view-unregistered-constituents-page.html" id="registerConstituents">Register Unregistered Constituents</a>
         <div style="float: right">
             <p id="loggedin">Logged in as: </p>
             <a href="login-page.html" id="login">Login</a>
@@ -31,22 +32,26 @@
 <script>
     const viewComplaints = document.getElementById("viewComplaints");
     const createMeetings = document.getElementById("createMeetings");
+    const registerConstituents = document.getElementById("registerConstituents");
     const loggedin = document.getElementById("loggedin");
     const login = document.getElementById("login");
     const logout = document.getElementById("logout");
     const signup = document.getElementById("signup");
 
+
     //console.log(localStorage.getItem("user"));
-    user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("user"));
 
     if(user == null){
         viewComplaints.style = "display:none";
         createMeetings.style = "display:none";
+        registerConstituents.style = "display:none";
         logout.style = "display:none";
         loggedin.style = "display:none";
     }else if(!user.isCouncilMember){
         viewComplaints.style = "display:none";
         createMeetings.style = "display:none";
+        registerConstituents.style = "display:none";
     }
     if(user != null){
         login.style = "display:none";
