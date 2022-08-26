@@ -42,7 +42,6 @@
         if(response.status === 200){
             const constituent = await response.json();
             console.log(constituent);
-            //window.location = "file:///C:/Users/Sunny/Programming/ClientSideTech/library-frontend/book-registration.html";
             // local storage can be used to cache information
             constituent.password = null;
             localStorage.setItem("user", JSON.stringify(constituent));
