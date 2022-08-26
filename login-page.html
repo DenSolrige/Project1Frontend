@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login!</title>
+</head>
+<body>
+    <nav><a href="homepage.html">Home</a></nav>
+    <h1>Login</h1>
+
+    <form>
+        <fieldset style="width:200px ;">
+            <legend>Enter Your Account Details</legend>
+            <label for="usernameInput">Username</label>
+            <br>
+            <input id="usernameInput" type="text" minlength="1" maxlength="40">
+            <br>
+            <label for="passwordInput">Password</label>
+            <br>
+            <input id="passwordInput" type="password" minlength="1" maxlength="40">
+        </fieldset>
+        <button>Login</button>
+    </form>
+</body>
+<script>
+    const usernameInput = document.getElementById("usernameInput");
+    const passwordInput = document.getElementById("passwordInput");
+
+    document.addEventListener("submit", async event => {
+        event.preventDefault();
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        const logincredentials = {username,password};
+        //{fname,lname,username,password,isCouncilMember:false,isRegistered:false};
+        const response = await fetch("http://localhost:8080/login",{
+            method:"POST",
+            body: JSON.stringify(logincredentials),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        });
+        if(response.status === 200){
+            const constituent = await response.json();
+            console.log(constituent);
+            //window.location = "file:///C:/Users/Sunny/Programming/ClientSideTech/library-frontend/book-registration.html";
+            // local storage can be used to cache information
+            constituent.password = null;
+            localStorage.setItem("user", JSON.stringify(constituent));
+            //localStorage.getItem("user"); // retrieve item from storage
+            document.location.href = "homepage.html";
+        }
+        else if (response.status === 400){
+            alert("Password did not match!");
+        }
+        else if (response.status === 404){
+            alert("No account found with the username "+username);
+        }
+        else {
+            alert("Something went wrong server side!");
+        }
+    });
+</script>
+</html>
