@@ -39,7 +39,7 @@
         const description = inputComplaint.value;
 
         const complaint = {description};
-        const response = await fetch("http://localhost:8888/complaints",{
+        const response = await fetch("https://project1.salmoncliff-9cdcd619.centralus.azurecontainerapps.io/complaints",{
             method:"POST",
             body: JSON.stringify(complaint),
             headers:{
